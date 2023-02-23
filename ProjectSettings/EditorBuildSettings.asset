@@ -8,7 +8,10 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/Q1.unity
     guid: 2cda990e2423bbf4892e6590ba056729
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Q2.unity
     guid: 9e261ebfd5c5145ac82f1abaeaec0220
+  - enabled: 1
+    path: Assets/Scenes/Platformer.unity
+    guid: 0757da3c022254088812a5f9d5701838
   m_configObjects: {}
