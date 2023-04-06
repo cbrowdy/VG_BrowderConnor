@@ -1,7 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using SpaceShooter;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace SpaceShooter
 {
@@ -9,7 +12,16 @@ namespace SpaceShooter
     {
         // Start is called before the first frame update
         public GameObject projectilePrefab;
+        public Image imageHealthBar;
+        public TMP_Text hullUpgradeText;
+        public TMP_Text fireSpeedUpgradeText;
+        
+        
+        
         public float firingDelay = 1f;
+        public float healthMax = 100f;
+        public float health = 100f;
+       
         void Start()
         {
             StartCoroutine("FiringTimer");
@@ -20,6 +32,37 @@ namespace SpaceShooter
             Instantiate(projectilePrefab, transform.position, Quaternion.identity);
         }
 
+        public void UpgradeHull()
+        {
+            int cost = Mathf.RoundToInt(healthMax);
+
+            if (GameController.instance.money >= cost)
+            {
+                GameController.instance.money -= cost;
+
+                health += 50;
+                healthMax += 50;
+                imageHealthBar.fillAmount = health / healthMax;
+
+                hullUpgradeText.text = "Hull Strength $" + Mathf.RoundToInt(healthMax);
+            }
+            
+        }
+
+        public void UpgradeFireSpeed()
+        {
+            int cost = 100 + Mathf.RoundToInt((1f - firingDelay) * 100f);
+
+            if (GameController.instance.money >= cost)
+            {
+                GameController.instance.money -= cost;
+
+                firingDelay -= 0.05f;
+                
+                int newCost = 100 + Mathf.RoundToInt((1f - firingDelay) * 100f);
+                fireSpeedUpgradeText.text = "Fire Speed $" + newCost;
+            }
+        }
         IEnumerator FiringTimer()
         {
             yield return new WaitForSeconds(firingDelay);
@@ -31,10 +74,52 @@ namespace SpaceShooter
         // Update is called once per frame
         void Update()
         {
-            float yPosition = Mathf.Sin(GameController.instance.timeElasped) * 3f;
-            transform.position = new Vector2(0, yPosition);
+            if(health > 0)
+            {
+                float yPosition = Mathf.Sin(GameController.instance.timeElasped) * 3f;
+                transform.position = new Vector2(0, yPosition);
+            }
+            
         }
 
-        
+        void Die()
+        {
+            StopCoroutine("FiringTimer");
+            Rigidbody2D rb = GetComponent<Rigidbody2D>();
+            rb.gravityScale = 0;
+            rb.bodyType = RigidbodyType2D.Dynamic;
+        }
+        public void RepairHull()
+        {
+            int cost = 100;
+            if (GameController.instance.money >= cost && health < healthMax && health > 0)
+            {
+                GameController.instance.money -= cost;
+
+                health = healthMax;
+                imageHealthBar.fillAmount = health / healthMax;
+            }
+            
+        }
+
+        void TakeDamage(float damageAmount)
+        {
+            health -= damageAmount;
+            if (health <= 0)
+            {
+                Die();
+            }
+
+            imageHealthBar.fillAmount = health / healthMax;
+
+        }
+
+        private void OnCollisionEnter2D(Collision2D col)
+        {
+            if (col.gameObject.GetComponent<Asteroid>())
+            {
+                TakeDamage(10f);
+            }
+        }
     }
 }
