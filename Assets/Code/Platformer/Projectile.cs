@@ -8,9 +8,17 @@ namespace Platformer
     {
         void OnCollisionEnter2D(Collision2D other)
         {
+            if (other.gameObject.GetComponent<Target>())
+            {
+                SoundManager.instance.PlaySoundHit();
+            } else if (other.gameObject.layer == LayerMask.NameToLayer("Ground"))
+            {
+                SoundManager.instance.PlaySoundMiss();
+            }
             Destroy(gameObject);
         }
-        private Rigidbody2D _rigidbody2D;
+        
+        Rigidbody2D _rigidbody2D;
         // Start is called before the first frame update
         void Start()
         {

@@ -4,11 +4,24 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using TMPro;
+using UnityEngine.SocialPlatforms.Impl;
 
 namespace Platformer
 {
     public class PlayerController : MonoBehaviour
     {
+        public static PlayerController instance;
+
+        public TMP_Text scoreUI;
+
+        public int score;
+
+        public bool isPaused;
+        void Awake()
+        {
+            instance = this;
+        }
         // Start is called before the first frame update
         
         //outlet
@@ -41,6 +54,8 @@ namespace Platformer
             _rigidbody2D = GetComponent<Rigidbody2D>();
             sprite = GetComponent<SpriteRenderer>();
             animator = GetComponent<Animator>();
+
+            score = PlayerPrefs.GetInt("Score");
         }
 
         private void FixedUpdate()
@@ -56,9 +71,21 @@ namespace Platformer
             }
         }
 
+        public void ResetScore()
+        {
+            score = 0;
+            PlayerPrefs.DeleteKey("Score");
+        }
         // Update is called once per frame
         void Update()
         {
+            scoreUI.text = score.ToString();
+
+            if (isPaused)
+            {
+                return;
+            }
+            
             if (Input.GetKey(KeyCode.A))
             {
                _rigidbody2D.AddForce(Vector2.left*18f*Time.deltaTime,ForceMode2D.Impulse);
@@ -79,7 +106,10 @@ namespace Platformer
                 }
             }
             animator.SetInteger("JumpsLeft",jumpsLeft);
-            
+            if(Input.GetKeyDown(KeyCode.Escape))
+            {
+                MenuController.instance.Show();
+            }
             Vector3 mousePosition = Input.mousePosition;
             Vector3 mousePositionInWorld = Camera.main.ScreenToWorldPoint(mousePosition);
             Vector3 directionFromPlayerToMouse = mousePositionInWorld - transform.position;
